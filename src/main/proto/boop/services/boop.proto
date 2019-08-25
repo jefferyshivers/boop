@@ -1,0 +1,14 @@
+syntax = "proto3";
+
+package boop;
+
+import "google/protobuf/timestamp.proto";
+import "boop/events/boop.proto";
+
+option java_multiple_files = true;
+option java_package = "boop.services";
+
+service BoopService {
+    // Bi-directional boopalooza
+    rpc ExchangeBoops (stream BoopEvent) returns (stream BoopEvent) {}
+}

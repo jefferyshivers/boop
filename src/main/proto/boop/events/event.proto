@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+package boop;
+
+import "google/protobuf/timestamp.proto";
+import "boop/events/boop.proto";
+
+option java_multiple_files = true;
+option java_package = "boop.events";
+
+message Event {
+    google.protobuf.Timestamp date_sent = 1;
+
+    oneof data {
+        BoopEvent boop = 2;
+    }
+}
+
