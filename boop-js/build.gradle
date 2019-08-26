@@ -1,0 +1,17 @@
+plugins {
+    id "com.moowork.node" version "1.2.0"
+}
+
+apply plugin: 'base'
+apply plugin: "com.moowork.node"
+
+node {
+    version = "10.16.3"
+    download = true
+}
+
+task bundle(type: NpmTask, dependsOn: npmInstall) {
+    args = ['run', 'build']
+}
+
+assemble.dependsOn(bundle)

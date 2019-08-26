@@ -1,0 +1,10 @@
+{
+  "include": ["./src/**/*.ts"],
+  "compilerOptions": {
+    "outDir": "./.bin/build",
+    "types": ["node", "reflect-metadata"],
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "lib": ["es6"]
+  }
+}
