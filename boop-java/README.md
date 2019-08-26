@@ -1,4 +1,4 @@
-# Java client
+# Boop Java client
 If building this library individually, you may need to build
 `:boop-proto` first, as it is a dependency.
 
