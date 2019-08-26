@@ -15,5 +15,15 @@ $ ./gradlew build
 
 _Start the application_
 ```sh
-$ ./gradlew run
+$ ./gradlew -p ./boop-server run
 ```
+
+
+
+
+
+
+
+
+
+
