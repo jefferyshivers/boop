@@ -31,12 +31,19 @@ public class BoopClient {
         return server.validate();
     }
 
+    private void validate(ReceivedBoopProcessor processor) throws BoopClientException {
+        if (processor == null) {
+            throw new BoopClientException("Processor cannot be null");
+        }
+    }
+
     public void connect(ReceivedBoopProcessor processor) throws BoopClientException {
+        validate(processor);
+
         Channel channel = ManagedChannelBuilder.forAddress(server.host, server.port)
                 .build();
 
         connectedStub = BoopServiceGrpc.newStub(channel);
-
         observer = new ServerResponseObserver(processor);
         observable = connectedStub.exchangeBoops(observer);
     }
@@ -72,7 +79,7 @@ public class BoopClient {
         @Override
         public void onNext(BoopEvent boop) {
             if (processor == null) {
-                logger.error("Could");
+                logger.error("Could not process boop, processor was never set");
             } else {
                 processor.process(boop);
             }
@@ -80,6 +87,8 @@ public class BoopClient {
 
         @Override
         public void onCompleted() {
+            observable = null;
+            observer = null;
             connectedStub = null;
         }
 
@@ -132,8 +141,6 @@ public class BoopClient {
             server.setApiKey(apiKey);
             return this;
         }
-
-//        public BoopClientBuilder onError()
 
         public BoopClient build() throws BoopClientException {
             return new BoopClient(server);

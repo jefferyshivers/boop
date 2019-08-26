@@ -125,8 +125,12 @@ public class BoopService extends BoopServiceGrpc.BoopServiceImplBase {
         public void onCompleted() {
             logger.info("Client signaled completion");
             try {
-                eventProducer.close();
-                eventConsumer.close();
+                if (eventProducer != null) {
+                    eventProducer.close();
+                }
+                if (eventConsumer != null) {
+                    eventConsumer.close();
+                }
             } catch (EventServiceException e) {
                 logger.error("Unable to stop Event Producer or Consumer: {}", e.getMessage());
             }

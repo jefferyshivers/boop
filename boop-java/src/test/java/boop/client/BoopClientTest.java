@@ -2,7 +2,6 @@ package boop.client;
 
 import boop.events.BoopEvent;
 import boop.events.BoopUser;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -86,6 +85,8 @@ public class BoopClientTest {
                 .apiKey("123")
                 .build();
         client.connect((boop -> {}));
+
+        // TODO actually test
         client.send(BoopEvent.newBuilder()
                 .setUser(BoopUser.newBuilder()
                         .setName("Sandy Cheeks")
