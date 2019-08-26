@@ -5,8 +5,12 @@ import boop.events.EventTopic;
 import boop.events.EventTopicSubscription;
 import org.apache.pulsar.client.api.PulsarClient;
 import org.apache.pulsar.client.api.PulsarClientException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class PulsarService implements EventService {
+
+    private static final Logger logger = LoggerFactory.getLogger(PulsarService.class);
 
     private final PulsarClient pulsarClient;
 
@@ -14,13 +18,13 @@ public class PulsarService implements EventService {
         this.pulsarClient = PulsarClient.builder()
                 .serviceUrl("pulsar://localhost:6650")
                 .build();
+        logger.info("Pulsar client started");
     }
 
     public <T extends EventTopic> PulsarProducer<T> createProducer(T topic) throws PulsarServiceException {
         try {
             return new PulsarProducer(pulsarClient, topic);
         } catch (PulsarClientException e) {
-            // log...
             throw new PulsarServiceException(e.getMessage());
         }
     }
@@ -29,7 +33,6 @@ public class PulsarService implements EventService {
         try {
             return new PulsarConsumer(pulsarClient, topic, subscription);
         } catch (PulsarClientException e) {
-            // log...
             throw new PulsarServiceException(e.getMessage());
         }
     }
@@ -38,7 +41,6 @@ public class PulsarService implements EventService {
         try {
             pulsarClient.close();
         } catch (PulsarClientException e) {
-            // log...
             throw new PulsarServiceException(e.getMessage());
         }
     }

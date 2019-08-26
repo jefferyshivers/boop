@@ -56,7 +56,7 @@ public class BoopServiceTest {
             private EventProcessor eventProcessor;
 
             public void receive(Event event) {
-                eventProcessor.process(event);
+                eventProcessor.process(event.toByteArray());
             }
 
             @Override
@@ -71,11 +71,12 @@ public class BoopServiceTest {
         when(eventService.createConsumer(any(EventTopic.class), any(EventTopicSubscription.class)))
                 .thenReturn(eventConsumer);
 
-        StreamObserver<BoopEvent> responsetreamObserver = (StreamObserver<BoopEvent>) mock(StreamObserver.class);
+        StreamObserver<BoopEvent> responseStreamObserver = (StreamObserver<BoopEvent>) mock(StreamObserver.class);
 
         // tests
         StreamObserver<BoopEvent> sendStreamObserver = new BoopService(eventService)
-                .exchangeBoops(responsetreamObserver);
+                .exchangeBoops(responseStreamObserver);
+
         BoopUser plankton = BoopUser.newBuilder()
                 .setName("Plankton")
                 .build();
@@ -99,22 +100,20 @@ public class BoopServiceTest {
                         .build())
                 .build();
 
-        // send an event to initialize the consumer for Plankton
         sendStreamObserver.onNext(BoopEvent.newBuilder()
                 .setUser(plankton)
                 .build());
-
-        // send some back from Friends and Self
+        eventConsumer.receive(planktonBoop);
         eventConsumer.receive(spongebobBoop);
-        eventConsumer.receive(planktonBoop); // should be ignored
         eventConsumer.receive(patrickBoop);
 
         ArgumentCaptor<BoopEvent> eventCaptor = ArgumentCaptor.forClass(BoopEvent.class);
 
-        verify(responsetreamObserver, times(2)).onNext(eventCaptor.capture());
+        verify(responseStreamObserver, times(3)).onNext(eventCaptor.capture());
         List<BoopEvent> events = eventCaptor.getAllValues();
-        assertEquals(spongebobBoop.getBoop(), events.get(0));
-        assertEquals(patrickBoop.getBoop(), events.get(1));
+        assertEquals(planktonBoop.getBoop(), events.get(0));
+        assertEquals(spongebobBoop.getBoop(), events.get(1));
+        assertEquals(patrickBoop.getBoop(), events.get(2));
     }
 
 }

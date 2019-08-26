@@ -29,7 +29,7 @@ public class Application {
             throw new RuntimeException(e);
         }
         this.server = ServerBuilder.forPort(port)
-                .addService(new BoopService(this.eventService))
+                .addService(new boop.services.BoopService(this.eventService))
                 .build();
     }
 

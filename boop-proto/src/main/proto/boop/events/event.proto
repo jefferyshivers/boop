@@ -15,4 +15,3 @@ message Event {
         BoopEvent boop = 2;
     }
 }
-

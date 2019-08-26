@@ -10,6 +10,14 @@ option java_package = "boop.events";
 message BoopEvent {
     google.protobuf.Timestamp date_sent = 1;
     BoopUser user = 2;
+    string message = 3;
+    BoopEventType eventType = 4;
+}
+
+enum BoopEventType {
+    JOIN = 0;
+    LEAVE = 1;
+    CHAT = 2;
 }
 
 message BoopUser {

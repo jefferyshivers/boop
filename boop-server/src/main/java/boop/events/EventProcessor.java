@@ -7,9 +7,9 @@ public interface EventProcessor {
 
     /**
      * Process
-     * @param event
+     * @param event as byte array
      * @return processed
      */
-    Result process(Event event);
+    Result process(byte[] event);
 
 }

@@ -20,40 +20,31 @@ public class BoopService extends BoopServiceGrpc.BoopServiceImplBase {
 
     @Override
     public StreamObserver<BoopEvent> exchangeBoops(StreamObserver<BoopEvent> responseObserver) {
-        ReceivedBoopEventObserver observer = new ReceivedBoopEventObserver(user -> {
+        ReceivedBoopEventObserver observer = new ReceivedBoopEventObserver((user) -> {
             try {
                 BasicEventTopicSubscription subscription = new BasicEventTopicSubscription(user.getName());
-                EventConsumer eventConsumer = eventService.createConsumer(BasicEventTopic.BOOP, subscription);
-                eventConsumer.onNext(((boop) -> {
+                EventConsumer<BasicEventTopic> eventConsumer = eventService.createConsumer(BasicEventTopic.BOOP, subscription);
+                eventConsumer.onNext(((data) -> {
                     try {
-                        if (!boop.getBoop().getUserOrBuilder().equals(user)) {
-                            responseObserver.onNext(boop.getBoop());
-                            return EventProcessor.Result.SUCCESS;
-                        } else {
-                            return EventProcessor.Result.IGNORED;
-                        }
+                        Event event = Event.parseFrom(data);
+                        responseObserver.onNext(event.getBoop());
+                        return EventProcessor.Result.SUCCESS;
                     } catch (Exception e) {
-                        logger.error("Failed to ");
+                        logger.error("Consumer failed to process message: {}", e.getMessage());
                         return EventProcessor.Result.FAILED;
                     }
                 }));
+                return eventConsumer;
             } catch (EventServiceException e) {
                 logger.error("Something went wrong: {}", e.getMessage());
                 responseObserver.onError(e);
             }
+            return null;
         });
 
         try {
             EventProducer<BasicEventTopic> eventProducer = eventService.createProducer(BasicEventTopic.BOOP);
             observer.setEventProducer(eventProducer);
-            observer.whenOnCompleted(() -> {
-                try {
-                    eventProducer.close();
-                    // TODO stop consumer too
-                } catch (EventServiceException e) {
-                    logger.error("Unable to stop Event Producer: {}", e.getMessage());
-                }
-            });
         } catch (EventServiceException e) {
             logger.error("Something went wrong, unable to setup event producer: {}", e.getMessage());
             responseObserver.onError(e);
@@ -69,29 +60,24 @@ public class BoopService extends BoopServiceGrpc.BoopServiceImplBase {
          * Process
          * @param user
          */
-        void process(BoopUser user);
+        EventConsumer<BasicEventTopic> process(BoopUser user);
 
     }
 
     public class ReceivedBoopEventObserver implements StreamObserver<BoopEvent> {
 
         private BoopUser user;
-
         private final BoopUserProcessor boopUserProcessor;
         private EventProducer<BasicEventTopic> eventProducer;
-        private Runnable onCompletedHandler;
+        private EventConsumer<BasicEventTopic> eventConsumer;
 
-        /**
-         * Called
-         * @param boopUserProcessor called when BoopUser if first received
-         */
         private ReceivedBoopEventObserver(BoopUserProcessor boopUserProcessor) {
             this.boopUserProcessor = boopUserProcessor;
         }
 
         private void processBoopUser(BoopUser user) {
             this.user = user;
-            boopUserProcessor.process(user);
+            this.eventConsumer = boopUserProcessor.process(user);
         }
 
         private void setEventProducer(EventProducer<BasicEventTopic> eventProducer) {
@@ -104,7 +90,6 @@ public class BoopService extends BoopServiceGrpc.BoopServiceImplBase {
                 } catch (EventServiceException e) {
                     logger.error("Failed to close extra event producer: {}", e.getMessage());
                 }
-
             }
         }
 
@@ -129,7 +114,6 @@ public class BoopService extends BoopServiceGrpc.BoopServiceImplBase {
             } else {
                 logger.error("Event producer not initialized; skipping event...");
             }
-
         }
 
         @Override
@@ -140,11 +124,12 @@ public class BoopService extends BoopServiceGrpc.BoopServiceImplBase {
         @Override
         public void onCompleted() {
             logger.info("Client signaled completion");
-            onCompletedHandler.run();
-        }
-
-        public void whenOnCompleted(Runnable runnable) {
-            this.onCompletedHandler = runnable;
+            try {
+                eventProducer.close();
+                eventConsumer.close();
+            } catch (EventServiceException e) {
+                logger.error("Unable to stop Event Producer or Consumer: {}", e.getMessage());
+            }
         }
     }
 

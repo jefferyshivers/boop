@@ -48,12 +48,7 @@ public class PulsarConsumer<T extends EventTopic> implements EventConsumer<T> {
         if (rawMessage != null) {
             byte[] data = rawMessage.getData();
 
-            EventProcessor.Result result = eventProcessor.process(Event.newBuilder()
-                    .setDateSent(Timestamp.newBuilder()
-                            .setSeconds(System.currentTimeMillis()*1000)
-                            .build())
-                    .setBoop(BoopEvent.parseFrom(data))
-                    .build());
+            EventProcessor.Result result = eventProcessor.process(data);
 
             switch (result) {
                 case FAILED:
