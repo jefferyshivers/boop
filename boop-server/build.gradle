@@ -1,11 +1,32 @@
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+
+    dependencies {
+        classpath 'com.google.protobuf:protobuf-gradle-plugin:0.8.9'
+    }
+}
+
 plugins {
+    id 'idea'
     id 'application'
+    id "com.google.protobuf"
 }
 
 def grpcVersion = '1.21.0'
 
+protobuf {
+    protoc { artifact = 'com.google.protobuf:protoc:3.5.1-1' }
+    plugins {
+        grpc { artifact = "io.grpc:protoc-gen-grpc-java:${grpcVersion}" }
+    }
+    generateProtoTasks {
+        all()*.plugins { grpc {} }
+    }
+}
+
 dependencies {
-    implementation project(':boop-proto')
     implementation "io.grpc:grpc-all:${grpcVersion}"
     implementation 'org.apache.pulsar:pulsar-client:2.4.0'
 }

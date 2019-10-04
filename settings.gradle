@@ -1,5 +1,4 @@
 rootProject.name = 'boop'
-include ':boop-proto'
 include ':boop-server'
 include ':boop-java'
 include ':boop-js'
