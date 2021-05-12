@@ -27,7 +27,7 @@
     "@types/node": "^11.13.8",
     "@types/reflect-metadata": "^0.1.0",
     "chai": "^4.2.0",
-    "grpc": "^1.23.3",
+    "grpc": "^1.24.9",
     "mocha": "^6.1.4",
     "node-pre-gyp": "^0.13.0",
     "reflect-metadata": "^0.1.13",
